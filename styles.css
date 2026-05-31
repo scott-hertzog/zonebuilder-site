@@ -388,6 +388,101 @@ p {
   border-radius: 0 0 15px 15px;
 }
 
+.capture::before {
+  inset: 3px;
+  border: 4px solid var(--violet);
+  border-radius: 50%;
+}
+
+.capture::after {
+  top: 11px;
+  left: 11px;
+  width: 10px;
+  height: 10px;
+  background: var(--violet);
+  border-radius: 50%;
+  box-shadow: 10px -10px 0 -2px var(--violet);
+}
+
+.organize::before {
+  top: 8px;
+  right: 2px;
+  bottom: 3px;
+  left: 2px;
+  border: 4px solid var(--blue);
+  border-radius: 4px;
+}
+
+.organize::after {
+  top: 4px;
+  left: 4px;
+  width: 14px;
+  height: 8px;
+  border: 4px solid var(--blue);
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+}
+
+.plan::before {
+  inset: 4px 3px 2px;
+  border: 4px solid #58d187;
+  border-radius: 5px;
+}
+
+.plan::after {
+  top: 12px;
+  left: 8px;
+  width: 5px;
+  height: 5px;
+  background: #58d187;
+  border-radius: 1px;
+  box-shadow:
+    9px 0 0 #58d187,
+    18px 0 0 #58d187,
+    0 9px 0 #58d187,
+    9px 9px 0 #58d187,
+    18px 9px 0 #58d187;
+}
+
+.practice::before {
+  top: 4px;
+  left: 13px;
+  width: 6px;
+  height: 26px;
+  background: var(--orange);
+  border-radius: 999px;
+  transform: rotate(42deg);
+}
+
+.practice::after {
+  bottom: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border: 4px solid var(--orange);
+  border-radius: 50%;
+}
+
+.hero-bullets li:nth-child(1) strong,
+.journey-cards article:nth-child(1) h4 {
+  color: #9a63ff;
+}
+
+.hero-bullets li:nth-child(2) strong,
+.journey-cards article:nth-child(2) h4 {
+  color: #2fa7ff;
+}
+
+.hero-bullets li:nth-child(3) strong,
+.journey-cards article:nth-child(3) h4 {
+  color: #58d187;
+}
+
+.hero-bullets li:nth-child(4) strong,
+.journey-cards article:nth-child(4) h4 {
+  color: var(--orange);
+}
+
 .hero-stage {
   position: relative;
   margin-top: 10px;
@@ -2434,7 +2529,7 @@ body::after {
   pointer-events: none;
   opacity: 0;
   transform: translateY(10px) scale(0.985);
-  animation-duration: 55s;
+  animation-duration: 42s;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   will-change: opacity, transform;
@@ -2447,8 +2542,7 @@ body::after {
 
 .story-scene-practice-chaos,
 .story-scene-knowledge-chaos,
-.story-scene-connected,
-.story-scene-return {
+.story-scene-connected {
   display: grid;
   place-items: center;
   padding: 34px 18px 16px;
@@ -2464,10 +2558,6 @@ body::after {
 
 .story-scene-connected {
   animation-name: connectedScene;
-}
-
-.story-scene-return {
-  animation-name: returnScene;
 }
 
 .story-scene-connected .story-message {
@@ -2834,37 +2924,18 @@ body::after {
   border-radius: 999px;
 }
 
-.return-frame {
-  position: relative;
-  width: min(760px, 92%);
-  aspect-ratio: 1.43;
-  overflow: hidden;
-  filter:
-    drop-shadow(0 42px 48px rgba(0, 0, 0, 0.52))
-    drop-shadow(0 12px 18px rgba(0, 0, 0, 0.36));
-}
-
-.return-frame img {
-  position: absolute;
-  top: -11.2%;
-  left: -48.4%;
-  width: 149%;
-  max-width: none;
-  filter: contrast(1.02) saturate(1.01) brightness(0.98);
-}
-
 @keyframes productScene {
   0%,
-  15% {
+  10% {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-  20%,
-  82% {
+  16%,
+  78% {
     opacity: 0;
     transform: translateY(4px) scale(0.99);
   }
-  86%,
+  84%,
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -2873,16 +2944,16 @@ body::after {
 
 @keyframes practiceChaosScene {
   0%,
-  17% {
+  13% {
     opacity: 0;
     transform: translateY(10px) scale(0.985);
   }
-  22%,
-  35% {
+  18%,
+  31% {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-  40%,
+  36%,
   100% {
     opacity: 0;
     transform: translateY(-4px) scale(0.99);
@@ -2891,16 +2962,16 @@ body::after {
 
 @keyframes knowledgeChaosScene {
   0%,
-  37% {
+  33% {
     opacity: 0;
     transform: translateY(10px) scale(0.985);
   }
-  42%,
-  55% {
+  38%,
+  51% {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-  60%,
+  56%,
   100% {
     opacity: 0;
     transform: translateY(-4px) scale(0.99);
@@ -2909,34 +2980,16 @@ body::after {
 
 @keyframes connectedScene {
   0%,
-  57% {
+  53% {
     opacity: 0;
     transform: translateY(10px) scale(0.985);
   }
-  62%,
-  75% {
+  58%,
+  74% {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
   80%,
-  100% {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.99);
-  }
-}
-
-@keyframes returnScene {
-  0%,
-  77% {
-    opacity: 0;
-    transform: translateY(10px) scale(0.985);
-  }
-  82%,
-  95% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  99%,
   100% {
     opacity: 0;
     transform: translateY(-4px) scale(0.99);
@@ -3452,8 +3505,7 @@ body::after {
 
   .story-scene-practice-chaos,
   .story-scene-knowledge-chaos,
-  .story-scene-connected,
-  .story-scene-return {
+  .story-scene-connected {
     padding: 0;
   }
 
@@ -3477,8 +3529,7 @@ body::after {
 
   .practice-chaos-field,
   .knowledge-chaos-field,
-  .connected-system,
-  .return-frame {
+  .connected-system {
     width: 100%;
     min-height: 295px;
   }
@@ -3547,17 +3598,6 @@ body::after {
     flex-basis: 18px;
     height: 18px;
     font-size: 0.56rem;
-  }
-
-  .return-frame {
-    min-height: 0;
-    aspect-ratio: 1.14;
-  }
-
-  .return-frame img {
-    top: -11%;
-    left: -60%;
-    width: 190%;
   }
 
   .chaos-card,
@@ -4138,6 +4178,87 @@ body::after {
   border-radius: 999px;
 }
 
+.journey-panel {
+  grid-column: 1 / -1;
+  padding-top: clamp(18px, 2.5vw, 26px);
+  border-top: 1px solid rgba(255, 255, 255, 0.075);
+}
+
+.journey-heading {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.journey-heading h3 {
+  margin-bottom: 6px;
+  font-size: clamp(1.45rem, 2.4vw, 2.1rem);
+  line-height: 1.08;
+}
+
+.journey-heading p {
+  margin-bottom: 0;
+  color: rgba(219, 226, 235, 0.78);
+}
+
+.journey-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.journey-cards article {
+  position: relative;
+  min-height: 210px;
+  padding: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 82% 12%, rgba(255, 255, 255, 0.055), transparent 13rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.052), rgba(255, 255, 255, 0.014)),
+    rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.078);
+  border-radius: var(--radius);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.048);
+}
+
+.journey-cards article::after {
+  position: absolute;
+  right: -28px;
+  bottom: -34px;
+  width: 112px;
+  height: 112px;
+  content: "";
+  background: radial-gradient(circle, rgba(123, 77, 255, 0.14), transparent 68%);
+  border-radius: 50%;
+}
+
+.journey-cards article:nth-child(2)::after {
+  background: radial-gradient(circle, rgba(0, 163, 255, 0.13), transparent 68%);
+}
+
+.journey-cards article:nth-child(3)::after {
+  background: radial-gradient(circle, rgba(88, 209, 135, 0.13), transparent 68%);
+}
+
+.journey-cards article:nth-child(4)::after {
+  background: radial-gradient(circle, rgba(255, 107, 33, 0.13), transparent 68%);
+}
+
+.journey-cards .bullet-icon {
+  margin-bottom: 18px;
+}
+
+.journey-cards h4 {
+  margin-bottom: 9px;
+  font-size: 1.08rem;
+}
+
+.journey-cards p {
+  margin-bottom: 0;
+  color: rgba(205, 213, 224, 0.8);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
 .about-prototype {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(340px, 0.72fr);
@@ -4225,7 +4346,8 @@ body::after {
   }
 
   .capability-grid,
-  .flow-panel {
+  .flow-panel,
+  .journey-cards {
     grid-template-columns: 1fr;
   }
 
@@ -4236,6 +4358,10 @@ body::after {
 
   .flow-solution {
     padding-top: 142px;
+  }
+
+  .journey-cards article {
+    min-height: auto;
   }
 
   .how-it-works {
@@ -4328,6 +4454,7 @@ body::after {
 
   .flow-breakers,
   .flow-solution,
+  .journey-cards article,
   .about-materials {
     padding: 16px;
   }
@@ -4344,6 +4471,26 @@ body::after {
 
   .flow-solution {
     padding-top: 126px;
+  }
+
+  .journey-panel {
+    padding-top: 18px;
+  }
+
+  .journey-heading {
+    text-align: left;
+  }
+
+  .journey-heading h3 {
+    font-size: 1.36rem;
+  }
+
+  .journey-cards {
+    gap: 10px;
+  }
+
+  .journey-cards .bullet-icon {
+    margin-bottom: 12px;
   }
 
   .about-prototype blockquote {
