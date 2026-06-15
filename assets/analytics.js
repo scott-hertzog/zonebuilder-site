@@ -30,11 +30,22 @@ async function postAnalyticsPayload(payload) {
       body: JSON.stringify(payload),
     });
 
+    const responseText = await response.text();
+    let responseData = {};
+
+    if (responseText) {
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (error) {
+        responseData = { rawResponse: responseText };
+      }
+    }
+
     if (!response.ok) {
       throw new Error(`Analytics request failed with ${response.status}`);
     }
 
-    return { ok: true };
+    return { ok: true, ...responseData };
   } catch (error) {
     console.warn("[ZoneBuilder analytics] Event failed.", error);
     return { ok: false, error };
@@ -49,10 +60,22 @@ export async function trackEvent(eventName, metadata = {}) {
   });
 }
 
-export async function sendSignup(email, metadata = {}) {
+export async function sendSignup({ name = "", email }, metadata = {}) {
   return postAnalyticsPayload({
+    action: "signup",
     type: "signup",
     eventName: "waitlist_signup",
+    name,
+    email,
+    metadata: buildMetadata(metadata),
+  });
+}
+
+export async function resendWelcomeEmail(email, metadata = {}) {
+  return postAnalyticsPayload({
+    action: "resendWelcomeEmail",
+    type: "resendWelcomeEmail",
+    eventName: "welcome_email_resent_request",
     email,
     metadata: buildMetadata(metadata),
   });

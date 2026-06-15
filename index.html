@@ -6,7 +6,7 @@
   <meta name="description" content="ZoneBuilder helps musicians turn goals, drills, songs, and learning materials into a structured practice system." />
   <title>ZoneBuilder | Build your practice</title>
   <link rel="stylesheet" href="styles.css?v=landing-static-26" />
-  <script type="module" src="assets/landing.js?v=landing-static-2"></script>
+  <script type="module" src="assets/landing.js?v=landing-static-4"></script>
 </head>
 <body>
   <div class="page-shell">
@@ -478,14 +478,18 @@
         <button class="modal-close" type="button" aria-label="Close registration" data-registration-cancel></button>
         <p class="eyebrow">ZoneBuilder Alpha</p>
         <h2 id="registration-title">Enter the Zone</h2>
-        <p>Enter your email to access ZoneBuilder Alpha.</p>
-        <p>We'll use this to:</p>
-        <ul>
-          <li>send important alpha notices</li>
-          <li>identify early adopters</li>
-          <li>support future licensing and grandfathering</li>
-        </ul>
+        <div data-registration-intro>
+          <p>Enter your email to access ZoneBuilder Alpha.</p>
+          <p>We'll use this to:</p>
+          <ul>
+            <li>email your direct launch link</li>
+            <li>identify early adopters</li>
+            <li>support future licensing and grandfathering</li>
+          </ul>
+        </div>
         <form class="registration-form" action="#" method="post" data-registration-form>
+          <label for="registration-name">Name</label>
+          <input id="registration-name" name="name" type="text" placeholder="Your name" autocomplete="name" />
           <label for="registration-email">Email</label>
           <input id="registration-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required />
           <p class="form-error" data-registration-error role="alert" hidden>Email is required.</p>
@@ -494,6 +498,15 @@
             <button class="button button-secondary" type="button" data-registration-cancel>Cancel</button>
           </div>
         </form>
+        <div class="registration-result" data-registration-result hidden>
+          <h3 data-registration-result-title>Welcome to ZoneBuilder Alpha</h3>
+          <p data-registration-result-message>We emailed you a direct launch link.</p>
+          <div class="modal-actions">
+            <button class="button button-primary" type="button" data-launch-zonebuilder>Launch ZoneBuilder</button>
+            <button class="button button-secondary" type="button" data-resend-welcome-email hidden>Resend Welcome Email</button>
+            <button class="button button-secondary subtle-button" type="button" data-edit-registration-email>Use Another Email</button>
+          </div>
+        </div>
       </div>
     </div>
 

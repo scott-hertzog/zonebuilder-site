@@ -4418,6 +4418,12 @@ body::after {
   color: rgba(219, 226, 235, 0.82);
 }
 
+.registration-dialog h3 {
+  margin: 0 0 10px;
+  font-size: clamp(1.45rem, 4vw, 2rem);
+  line-height: 1.08;
+}
+
 .registration-dialog ul {
   display: grid;
   gap: 8px;
@@ -4445,6 +4451,20 @@ body::after {
 .registration-form {
   display: grid;
   gap: 12px;
+}
+
+.registration-form[hidden],
+[data-registration-intro][hidden] {
+  display: none;
+}
+
+.registration-result {
+  display: grid;
+  gap: 14px;
+}
+
+.registration-result[hidden] {
+  display: none;
 }
 
 .registration-form label {
