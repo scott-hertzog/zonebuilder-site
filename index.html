@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="ZoneBuilder helps musicians turn goals, drills, songs, and learning materials into a structured practice system." />
   <title>ZoneBuilder | Build your practice</title>
-  <link rel="stylesheet" href="styles.css?v=landing-static-24" />
+  <link rel="stylesheet" href="styles.css?v=landing-static-26" />
+  <script type="module" src="assets/landing.js?v=landing-static-2"></script>
 </head>
 <body>
   <div class="page-shell">
@@ -26,7 +27,7 @@
         <a href="#about">About</a>
       </nav>
 
-      <a class="button button-primary nav-cta" href="#waitlist">Enter the Zone</a>
+      <button class="button button-primary nav-cta" type="button" data-enter-zone>Enter the Zone</button>
     </header>
 
     <main>
@@ -41,7 +42,7 @@
           </p>
 
           <div class="hero-actions" aria-label="Hero actions">
-            <a class="button button-primary" href="#waitlist">Join the Waitlist</a>
+            <button class="button button-primary" type="button" data-enter-zone>Enter the Zone</button>
             <a class="button button-secondary" href="#video">Watch Video</a>
           </div>
 
@@ -244,7 +245,7 @@
             <div>
               <h2 id="video-title">ZoneBuilder in Action</h2>
               <p>See how ZoneBuilder automates practice and keeps everything connected in under 90 seconds.</p>
-              <a class="text-link" href="#waitlist">Watch Video</a>
+              <a class="text-link" href="#enter-zone">Watch Video</a>
             </div>
           </div>
         </section>
@@ -269,17 +270,13 @@
           </div>
         </section>
 
-        <!-- Waitlist CTA -->
-        <section class="waitlist-cta" id="waitlist" aria-labelledby="waitlist-title">
+        <!-- Registration CTA -->
+        <section class="entry-cta" id="enter-zone" aria-labelledby="entry-title">
           <div>
-            <h2 id="waitlist-title">Be the first to <span>enter the zone.</span></h2>
-            <p>Early access. Exclusive updates. No spam.</p>
+            <h2 id="entry-title">Start building your practice today.</h2>
+            <p>Register once, then enter ZoneBuilder Alpha.</p>
           </div>
-          <form class="waitlist-form" action="#" method="post">
-            <label class="sr-only" for="email">Email address</label>
-            <input id="email" name="email" type="email" placeholder="Enter your email" autocomplete="email" />
-            <button class="button button-primary" type="submit">Join the Waitlist</button>
-          </form>
+          <button class="button button-primary" type="button" data-enter-zone>Enter the Zone</button>
         </section>
       </div>
 
@@ -468,13 +465,42 @@
         <blockquote>
           “ZoneBuilder helps you practice in ways that align with how musicians actually learn.”
         </blockquote>
+
+        <section class="closing-cta" aria-labelledby="closing-cta-title">
+          <h2 id="closing-cta-title">Start building your practice today.</h2>
+          <button class="button button-primary" type="button" data-enter-zone>Enter the Zone</button>
+        </section>
       </section>
     </main>
+
+    <div class="registration-modal" data-registration-modal hidden>
+      <div class="registration-dialog" role="dialog" aria-modal="true" aria-labelledby="registration-title">
+        <button class="modal-close" type="button" aria-label="Close registration" data-registration-cancel></button>
+        <p class="eyebrow">ZoneBuilder Alpha</p>
+        <h2 id="registration-title">Enter the Zone</h2>
+        <p>Enter your email to access ZoneBuilder Alpha.</p>
+        <p>We'll use this to:</p>
+        <ul>
+          <li>send important alpha notices</li>
+          <li>identify early adopters</li>
+          <li>support future licensing and grandfathering</li>
+        </ul>
+        <form class="registration-form" action="#" method="post" data-registration-form>
+          <label for="registration-email">Email</label>
+          <input id="registration-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required />
+          <p class="form-error" data-registration-error role="alert" hidden>Email is required.</p>
+          <div class="modal-actions">
+            <button class="button button-primary" type="submit">Enter the Zone</button>
+            <button class="button button-secondary" type="button" data-registration-cancel>Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- Footer -->
     <footer class="site-footer">
       <span>zonebuilder.app</span>
-      <span>Early access</span>
+      <span>Alpha registration</span>
       <span>No spam. Ever.</span>
     </footer>
   </div>
