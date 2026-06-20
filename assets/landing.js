@@ -6,6 +6,11 @@ const REGISTRATION_EVENT_NAME = "waitlist_signup";
 const ALPHA_REGISTERED_STORAGE_KEY = "zonebuilderAlphaRegistered";
 const ALPHA_REGISTERED_EMAIL_KEY = "zonebuilderAlphaEmail";
 const ALPHA_REGISTERED_NAME_KEY = "zonebuilderAlphaName";
+const LANDING_IDENTITY_STORAGE_KEYS = [
+  ALPHA_REGISTERED_STORAGE_KEY,
+  ALPHA_REGISTERED_EMAIL_KEY,
+  ALPHA_REGISTERED_NAME_KEY,
+];
 
 const enterZoneButtons = document.querySelectorAll("[data-enter-zone]");
 const registrationModal = document.querySelector("[data-registration-modal]");
@@ -21,7 +26,7 @@ const registrationResultTitle = document.querySelector("[data-registration-resul
 const registrationResultMessage = document.querySelector("[data-registration-result-message]");
 const launchButtons = document.querySelectorAll("[data-launch-zonebuilder]");
 const resendButtons = document.querySelectorAll("[data-resend-welcome-email]");
-const editRegistrationButtons = document.querySelectorAll("[data-edit-registration-email]");
+const forgetRegistrationButtons = document.querySelectorAll("[data-forget-registration]");
 const installTriggers = document.querySelectorAll("[data-install-trigger]");
 
 let deferredInstallPrompt = null;
@@ -65,6 +70,20 @@ function storeRegistration(email, name = "") {
     }
   } catch (error) {
     console.warn("[ZoneBuilder] Could not store registration state.", error);
+  }
+}
+
+function clearRememberedRegistration() {
+  try {
+    LANDING_IDENTITY_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+  } catch (error) {
+    console.warn("[ZoneBuilder] Could not clear local registration state.", error);
+  }
+
+  try {
+    LANDING_IDENTITY_STORAGE_KEYS.forEach((key) => sessionStorage.removeItem(key));
+  } catch (error) {
+    console.warn("[ZoneBuilder] Could not clear session registration state.", error);
   }
 }
 
@@ -200,9 +219,13 @@ function openRegistrationModal() {
   document.body.classList.add("modal-open");
 
   if (hasStoredRegistration()) {
+    const rememberedEmail = getStoredRegistrationEmail();
+    const rememberedName = getStoredRegistrationName();
+    const identity = rememberedEmail || rememberedName || "a previous Alpha registration";
+
     showRegistrationResult({
       title: "Welcome back",
-      message: "You can launch ZoneBuilder Alpha from here.",
+      message: "This landing page remembers " + identity + ". This does not mean ZoneBuilder is installed or signed in.",
       canResend: Boolean(getStoredRegistrationEmail()),
     });
   } else {
@@ -240,6 +263,21 @@ function launchZoneBuilder() {
   }
 
   window.location.assign(ZONEBUILDER_APP_URL);
+}
+
+function forgetThisBrowser() {
+  clearRememberedRegistration();
+
+  if (registrationNameInput) {
+    registrationNameInput.value = "";
+  }
+
+  if (registrationEmailInput) {
+    registrationEmailInput.value = "";
+  }
+
+  showRegistrationForm();
+  registrationNameInput?.focus();
 }
 
 function getBackendValidationReason(result) {
@@ -408,8 +446,8 @@ launchButtons.forEach((button) => {
   });
 });
 
-editRegistrationButtons.forEach((button) => {
-  button.addEventListener("click", showRegistrationFormForEmailUpdate);
+forgetRegistrationButtons.forEach((button) => {
+  button.addEventListener("click", forgetThisBrowser);
 });
 
 resendButtons.forEach((button) => {
