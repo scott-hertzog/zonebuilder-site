@@ -1,4 +1,4 @@
-import { resendWelcomeEmail, sendSignup, trackEvent } from "./analytics.js?v=landing-static-4";
+import { resendWelcomeEmail, sendSignup, trackEvent } from "./analytics.js?v=landing-static-6";
 
 const ZONEBUILDER_APP_URL = "https://scott-hertzog.github.io/zonebuilder-pwa/";
 // Keep this as waitlist_signup until the collector whitelist includes registration_submitted.
@@ -12,6 +12,7 @@ const registrationForm = document.querySelector("[data-registration-form]");
 const registrationNameInput = document.querySelector("#registration-name");
 const registrationEmailInput = document.querySelector("#registration-email");
 const registrationError = document.querySelector("[data-registration-error]");
+const validationFields = document.querySelectorAll("[data-validation-field]");
 const registrationCancelButtons = document.querySelectorAll("[data-registration-cancel]");
 const registrationIntro = document.querySelector("[data-registration-intro]");
 const registrationResult = document.querySelector("[data-registration-result]");
@@ -67,6 +68,46 @@ function setRegistrationError(message) {
   registrationError.hidden = false;
 }
 
+function getFieldError(input) {
+  if (!input?.id) {
+    return null;
+  }
+
+  return document.querySelector(`[data-field-error-for="${input.id}"]`);
+}
+
+function setFieldError(input, message) {
+  const fieldError = getFieldError(input);
+
+  if (fieldError) {
+    fieldError.textContent = message;
+    fieldError.hidden = false;
+  }
+
+  input?.setAttribute("aria-invalid", "true");
+}
+
+function clearFieldError(input) {
+  const fieldError = getFieldError(input);
+
+  if (fieldError) {
+    fieldError.hidden = true;
+  }
+
+  input?.removeAttribute("aria-invalid");
+}
+
+function clearFieldErrors() {
+  validationFields.forEach(clearFieldError);
+}
+
+function trackSignupValidationError(reason, metadata = {}) {
+  return trackEvent(`signup_validation_error_${reason}`, {
+    ...metadata,
+    validationReason: reason,
+  });
+}
+
 function clearRegistrationError() {
   if (!registrationError) {
     return;
@@ -89,6 +130,7 @@ function showRegistrationForm() {
   }
 
   clearRegistrationError();
+  clearFieldErrors();
 }
 
 function showRegistrationFormForEmailUpdate() {
@@ -162,6 +204,7 @@ function closeRegistrationModal() {
   registrationModal.hidden = true;
   document.body.classList.remove("modal-open");
   clearRegistrationError();
+  clearFieldErrors();
 
   if (previousFocus && typeof previousFocus.focus === "function") {
     previousFocus.focus();
@@ -177,6 +220,47 @@ function launchZoneBuilder() {
   window.location.assign(ZONEBUILDER_APP_URL);
 }
 
+function getBackendValidationReason(result) {
+  const reason = result?.reason || result?.code || result?.status || "";
+  const normalizedReason = String(reason).toLowerCase();
+
+  if (normalizedReason.includes("missing_name") || normalizedReason.includes("name_required")) {
+    return "missing_name";
+  }
+
+  if (normalizedReason.includes("missing_email") || normalizedReason.includes("email_required")) {
+    return "missing_email";
+  }
+
+  if (normalizedReason.includes("invalid_email")) {
+    return "invalid_email";
+  }
+
+  return "";
+}
+
+function showBackendValidationError(reason) {
+  if (reason === "missing_name") {
+    setFieldError(registrationNameInput, "Please enter your name.");
+    registrationNameInput?.focus();
+    return true;
+  }
+
+  if (reason === "missing_email") {
+    setFieldError(registrationEmailInput, "Please enter your email address.");
+    registrationEmailInput?.focus();
+    return true;
+  }
+
+  if (reason === "invalid_email") {
+    setFieldError(registrationEmailInput, "Please enter a valid email address.");
+    registrationEmailInput?.focus();
+    return true;
+  }
+
+  return false;
+}
+
 async function submitRegistration(form, metadata = {}) {
   const nameInput = form.querySelector('input[name="name"]');
   const emailInput = form.querySelector('input[type="email"]');
@@ -184,28 +268,31 @@ async function submitRegistration(form, metadata = {}) {
   const email = emailInput?.value.trim().toLowerCase();
   const submitButton = form.querySelector('button[type="submit"]');
   const originalButtonText = submitButton?.textContent;
-
-  if (!email) {
-    await trackEvent("signup_error", {
-      ...metadata,
-      reason: "missing_email",
-    });
-    setRegistrationError("Email is required.");
-    emailInput?.focus();
-    return;
-  }
-
-  if (!isValidEmail(email)) {
-    await trackEvent("signup_error", {
-      ...metadata,
-      reason: "invalid_email",
-    });
-    setRegistrationError("Enter a valid email address.");
-    emailInput?.focus();
-    return;
-  }
+  let firstInvalidField = null;
 
   clearRegistrationError();
+  clearFieldErrors();
+
+  if (!name) {
+    setFieldError(nameInput, "Please enter your name.");
+    firstInvalidField = firstInvalidField || nameInput;
+    void trackSignupValidationError("missing_name", metadata);
+  }
+
+  if (!email) {
+    setFieldError(emailInput, "Please enter your email address.");
+    firstInvalidField = firstInvalidField || emailInput;
+    void trackSignupValidationError("missing_email", metadata);
+  } else if (!isValidEmail(email)) {
+    setFieldError(emailInput, "Please enter a valid email address.");
+    firstInvalidField = firstInvalidField || emailInput;
+    void trackSignupValidationError("invalid_email", metadata);
+  }
+
+  if (firstInvalidField) {
+    firstInvalidField.focus();
+    return;
+  }
 
   if (submitButton) {
     submitButton.disabled = true;
@@ -251,6 +338,20 @@ async function submitRegistration(form, metadata = {}) {
       canResend: true,
     });
   } else {
+    const backendValidationReason = getBackendValidationReason(signupResult);
+
+    if (showBackendValidationError(backendValidationReason)) {
+      await trackSignupValidationError(backendValidationReason, {
+        ...metadata,
+        validationSource: "backend",
+      });
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+      }
+      return;
+    }
+
     await trackEvent("signup_error", {
       ...metadata,
       reason: signupResult.skipped ? "missing_endpoint" : "request_failed",
@@ -351,6 +452,13 @@ registrationForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   await submitRegistration(registrationForm, {
     location: "modal",
+  });
+});
+
+validationFields.forEach((field) => {
+  field.addEventListener("input", () => {
+    clearFieldError(field);
+    clearRegistrationError();
   });
 });
 

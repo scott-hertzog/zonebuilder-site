@@ -42,7 +42,12 @@ async function postAnalyticsPayload(payload) {
     }
 
     if (!response.ok) {
-      throw new Error(`Analytics request failed with ${response.status}`);
+      console.warn("[ZoneBuilder analytics] Request failed.", response.status, responseData);
+      return {
+        ok: false,
+        httpStatus: response.status,
+        ...responseData,
+      };
     }
 
     return { ok: true, ...responseData };

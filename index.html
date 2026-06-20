@@ -6,7 +6,7 @@
   <meta name="description" content="ZoneBuilder helps musicians turn goals, drills, songs, and learning materials into a structured practice system." />
   <title>ZoneBuilder | Build your practice</title>
   <link rel="stylesheet" href="styles.css?v=landing-static-26" />
-  <script type="module" src="assets/landing.js?v=landing-static-4"></script>
+  <script type="module" src="assets/landing.js?v=landing-static-6"></script>
 </head>
 <body>
   <div class="page-shell">
@@ -487,11 +487,13 @@
             <li>support future licensing and grandfathering</li>
           </ul>
         </div>
-        <form class="registration-form" action="#" method="post" data-registration-form>
+        <form class="registration-form" action="#" method="post" data-registration-form novalidate>
           <label for="registration-name">Name</label>
-          <input id="registration-name" name="name" type="text" placeholder="Your name" autocomplete="name" />
+          <input id="registration-name" name="name" type="text" placeholder="Your name" autocomplete="name" required data-validation-field />
+          <p class="field-error" data-field-error-for="registration-name" role="alert" hidden>Please enter your name.</p>
           <label for="registration-email">Email</label>
-          <input id="registration-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required />
+          <input id="registration-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required data-validation-field />
+          <p class="field-error" data-field-error-for="registration-email" role="alert" hidden>Please enter your email address.</p>
           <p class="form-error" data-registration-error role="alert" hidden>Email is required.</p>
           <div class="modal-actions">
             <button class="button button-primary" type="submit">Enter the Zone</button>
