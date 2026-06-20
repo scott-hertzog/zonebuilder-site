@@ -5,6 +5,7 @@ const ZONEBUILDER_APP_URL = "https://scott-hertzog.github.io/zonebuilder-pwa/";
 const REGISTRATION_EVENT_NAME = "waitlist_signup";
 const ALPHA_REGISTERED_STORAGE_KEY = "zonebuilderAlphaRegistered";
 const ALPHA_REGISTERED_EMAIL_KEY = "zonebuilderAlphaEmail";
+const ALPHA_REGISTERED_NAME_KEY = "zonebuilderAlphaName";
 
 const enterZoneButtons = document.querySelectorAll("[data-enter-zone]");
 const registrationModal = document.querySelector("[data-registration-modal]");
@@ -36,6 +37,14 @@ function getStoredRegistrationEmail() {
   }
 }
 
+function getStoredRegistrationName() {
+  try {
+    return localStorage.getItem(ALPHA_REGISTERED_NAME_KEY) || "";
+  } catch (error) {
+    return "";
+  }
+}
+
 function hasStoredRegistration() {
   try {
     return localStorage.getItem(ALPHA_REGISTERED_STORAGE_KEY) === "true";
@@ -44,12 +53,16 @@ function hasStoredRegistration() {
   }
 }
 
-function storeRegistration(email) {
+function storeRegistration(email, name = "") {
   const normalizedEmail = email.trim().toLowerCase();
+  const normalizedName = name.trim();
 
   try {
     localStorage.setItem(ALPHA_REGISTERED_STORAGE_KEY, "true");
     localStorage.setItem(ALPHA_REGISTERED_EMAIL_KEY, normalizedEmail);
+    if (normalizedName) {
+      localStorage.setItem(ALPHA_REGISTERED_NAME_KEY, normalizedName);
+    }
   } catch (error) {
     console.warn("[ZoneBuilder] Could not store registration state.", error);
   }
@@ -328,7 +341,7 @@ async function submitRegistration(form, metadata = {}) {
       ...signupMetadata,
       signupStatus: responseStatus,
     });
-    storeRegistration(email);
+    storeRegistration(email, name);
     form.reset();
     showRegistrationResult({
       title: isExisting
@@ -389,6 +402,7 @@ launchButtons.forEach((button) => {
       cta: button.textContent.trim(),
       location: "registration-modal",
       email: getStoredRegistrationEmail() || undefined,
+      name: getStoredRegistrationName() || undefined,
     });
     launchZoneBuilder();
   });
