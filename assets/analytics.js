@@ -5,6 +5,7 @@ const DEFAULT_METADATA = {
   source: "landing-page",
   environment: "alpha",
   page: "home",
+  usageMode: "production",
 };
 
 function buildMetadata(metadata = {}) {
@@ -12,6 +13,19 @@ function buildMetadata(metadata = {}) {
     ...DEFAULT_METADATA,
     userAgent: navigator.userAgent,
     ...metadata,
+  };
+}
+
+function buildAnalyticsPayload(metadata = {}) {
+  const enrichedMetadata = buildMetadata(metadata);
+
+  return {
+    source: enrichedMetadata.source,
+    environment: enrichedMetadata.environment,
+    page: enrichedMetadata.page,
+    usageMode: enrichedMetadata.usageMode,
+    userAgent: enrichedMetadata.userAgent,
+    metadata: enrichedMetadata,
   };
 }
 
@@ -61,27 +75,38 @@ export async function trackEvent(eventName, metadata = {}) {
   return postAnalyticsPayload({
     type: "event",
     eventName,
-    metadata: buildMetadata(metadata),
+    ...buildAnalyticsPayload(metadata),
   });
 }
 
 export async function sendSignup({ name = "", email }, metadata = {}) {
+  const signupMetadata = {
+    ...metadata,
+    name,
+    email,
+  };
+
   return postAnalyticsPayload({
     action: "signup",
     type: "signup",
     eventName: "waitlist_signup",
     name,
     email,
-    metadata: buildMetadata(metadata),
+    ...buildAnalyticsPayload(signupMetadata),
   });
 }
 
 export async function resendWelcomeEmail(email, metadata = {}) {
+  const resendMetadata = {
+    ...metadata,
+    email,
+  };
+
   return postAnalyticsPayload({
     action: "resendWelcomeEmail",
     type: "resendWelcomeEmail",
     eventName: "welcome_email_resent_request",
     email,
-    metadata: buildMetadata(metadata),
+    ...buildAnalyticsPayload(resendMetadata),
   });
 }

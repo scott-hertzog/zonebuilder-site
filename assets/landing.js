@@ -1,4 +1,4 @@
-import { resendWelcomeEmail, sendSignup, trackEvent } from "./analytics.js?v=landing-static-6";
+import { resendWelcomeEmail, sendSignup, trackEvent } from "./analytics.js?v=landing-static-7";
 
 const ZONEBUILDER_APP_URL = "https://scott-hertzog.github.io/zonebuilder-pwa/";
 // Keep this as waitlist_signup until the collector whitelist includes registration_submitted.
@@ -106,6 +106,15 @@ function trackSignupValidationError(reason, metadata = {}) {
     ...metadata,
     validationReason: reason,
   });
+}
+
+function buildSignupMetadata(metadata = {}, { name = "", email = "" } = {}) {
+  return {
+    ...metadata,
+    form: metadata.form || "registration",
+    name,
+    email,
+  };
 }
 
 function clearRegistrationError() {
@@ -268,6 +277,7 @@ async function submitRegistration(form, metadata = {}) {
   const email = emailInput?.value.trim().toLowerCase();
   const submitButton = form.querySelector('button[type="submit"]');
   const originalButtonText = submitButton?.textContent;
+  const signupMetadata = buildSignupMetadata(metadata, { name, email });
   let firstInvalidField = null;
 
   clearRegistrationError();
@@ -276,17 +286,17 @@ async function submitRegistration(form, metadata = {}) {
   if (!name) {
     setFieldError(nameInput, "Please enter your name.");
     firstInvalidField = firstInvalidField || nameInput;
-    void trackSignupValidationError("missing_name", metadata);
+    void trackSignupValidationError("missing_name", signupMetadata);
   }
 
   if (!email) {
     setFieldError(emailInput, "Please enter your email address.");
     firstInvalidField = firstInvalidField || emailInput;
-    void trackSignupValidationError("missing_email", metadata);
+    void trackSignupValidationError("missing_email", signupMetadata);
   } else if (!isValidEmail(email)) {
     setFieldError(emailInput, "Please enter a valid email address.");
     firstInvalidField = firstInvalidField || emailInput;
-    void trackSignupValidationError("invalid_email", metadata);
+    void trackSignupValidationError("invalid_email", signupMetadata);
   }
 
   if (firstInvalidField) {
@@ -302,10 +312,7 @@ async function submitRegistration(form, metadata = {}) {
   const signupResult = await sendSignup({
     name,
     email,
-  }, {
-    ...metadata,
-    form: metadata.form || "registration",
-  });
+  }, signupMetadata);
 
   if (signupResult.ok) {
     const responseStatus = signupResult.status || "new";
@@ -314,13 +321,12 @@ async function submitRegistration(form, metadata = {}) {
     const isExisting = status === "existing";
 
     await trackEvent(REGISTRATION_EVENT_NAME, {
-      ...metadata,
-      form: metadata.form || "registration",
+      ...signupMetadata,
       signupStatus: responseStatus,
     });
     await trackEvent(isExisting ? "alpha_signup_existing" : "alpha_signup_new", {
-      ...metadata,
-      form: metadata.form || "registration",
+      ...signupMetadata,
+      signupStatus: responseStatus,
     });
     storeRegistration(email);
     form.reset();
@@ -342,7 +348,7 @@ async function submitRegistration(form, metadata = {}) {
 
     if (showBackendValidationError(backendValidationReason)) {
       await trackSignupValidationError(backendValidationReason, {
-        ...metadata,
+        ...signupMetadata,
         validationSource: "backend",
       });
       if (submitButton) {
@@ -353,8 +359,9 @@ async function submitRegistration(form, metadata = {}) {
     }
 
     await trackEvent("signup_error", {
-      ...metadata,
+      ...signupMetadata,
       reason: signupResult.skipped ? "missing_endpoint" : "request_failed",
+      signupStatus: signupResult.status || "unknown",
     });
     setRegistrationError("Registration could not be completed. You can try again in a moment.");
   }
@@ -370,13 +377,19 @@ enterZoneButtons.forEach((button) => {
     openRegistrationModal();
     void trackEvent("install_button_clicked", {
       cta: button.textContent.trim(),
+      location: "enter-zone",
+      email: getStoredRegistrationEmail() || undefined,
     });
   });
 });
 
 launchButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    void trackEvent("launch_button_clicked");
+    void trackEvent("launch_button_clicked", {
+      cta: button.textContent.trim(),
+      location: "registration-modal",
+      email: getStoredRegistrationEmail() || undefined,
+    });
     launchZoneBuilder();
   });
 });
@@ -407,10 +420,12 @@ resendButtons.forEach((button) => {
 
     await trackEvent("welcome_email_resent_request", {
       location: "modal",
+      email,
     });
 
     const resendResult = await resendWelcomeEmail(email, {
       location: "modal",
+      email,
     });
 
     if (resendResult.ok) {
