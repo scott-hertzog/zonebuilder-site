@@ -1,7 +1,8 @@
 {
   "name": "zonebuilder-site-lab",
   "private": true,
+  "type": "module",
   "scripts": {
-    "test:handoff": "node tests/signup-handoff.test.mjs"
+    "test:handoff": "node tests/signup-handoff.test.mjs && node tests/remembered-launch-flow.test.mjs"
   }
 }

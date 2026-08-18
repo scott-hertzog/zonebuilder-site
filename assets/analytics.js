@@ -110,3 +110,11 @@ export async function resendWelcomeEmail(email, metadata = {}) {
     ...buildAnalyticsPayload(resendMetadata),
   });
 }
+
+export async function requestIdentityHandoff(email) {
+  return postAnalyticsPayload({
+    action: "requestIdentityHandoff",
+    type: "requestIdentityHandoff",
+    email,
+  });
+}

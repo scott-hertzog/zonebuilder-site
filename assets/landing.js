@@ -1,8 +1,9 @@
-import { resendWelcomeEmail, sendSignup, trackEvent } from "./analytics.js?v=landing-static-7";
+import { requestIdentityHandoff, resendWelcomeEmail, sendSignup, trackEvent } from "./analytics.js?v=landing-static-8";
 import { getSafeZoneBuilderLaunchUrl } from "./identity-handoff-url.mjs?v=zb-stage-1";
 
 const ZONEBUILDER_APP_URL = "https://scott-hertzog.github.io/zonebuilder-stage/";
 let pendingZoneBuilderLaunchUrl = "";
+let rememberedLaunchRequiresFreshHandoff = false;
 // Keep this as waitlist_signup until the collector whitelist includes registration_submitted.
 const REGISTRATION_EVENT_NAME = "waitlist_signup";
 const ALPHA_REGISTERED_STORAGE_KEY = "zonebuilderAlphaRegistered";
@@ -230,7 +231,9 @@ function openRegistrationModal() {
       message: "This landing page remembers " + identity + ". This does not mean ZoneBuilder is installed or signed in.",
       canResend: Boolean(getStoredRegistrationEmail()),
     });
+    rememberedLaunchRequiresFreshHandoff = !getSafeZoneBuilderLaunchUrl(pendingZoneBuilderLaunchUrl);
   } else {
+    rememberedLaunchRequiresFreshHandoff = false;
     showRegistrationForm();
   }
 
@@ -258,10 +261,55 @@ function closeRegistrationModal() {
   }
 }
 
-function launchZoneBuilder() {
+async function launchZoneBuilder(button) {
   if (!ZONEBUILDER_APP_URL) {
     console.warn("[ZoneBuilder] Missing ZONEBUILDER_APP_URL.");
     return;
+  }
+
+  if (rememberedLaunchRequiresFreshHandoff) {
+    const email = getStoredRegistrationEmail().trim().toLowerCase();
+    const originalButtonText = button?.textContent;
+
+    if (!isValidEmail(email)) {
+      pendingZoneBuilderLaunchUrl = "";
+      showRegistrationResult({
+        title: "Secure launch unavailable",
+        message: "This browser no longer has a valid remembered email. Enter it again to continue.",
+        canResend: false,
+      });
+      return;
+    }
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Preparing secure launch...";
+    }
+
+    const handoffResult = await requestIdentityHandoff(email);
+    const safeHandoffUrl = handoffResult.ok
+      ? getSafeZoneBuilderLaunchUrl(handoffResult.launchUrl)
+      : "";
+
+    if (!safeHandoffUrl) {
+      pendingZoneBuilderLaunchUrl = "";
+      showRegistrationResult({
+        title: "Secure launch unavailable",
+        message: "ZoneBuilder could not establish a secure launch. Please try again.",
+        canResend: true,
+      });
+      if (button) {
+        button.disabled = false;
+        button.textContent = originalButtonText;
+      }
+      return;
+    }
+
+    pendingZoneBuilderLaunchUrl = safeHandoffUrl;
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalButtonText;
+    }
   }
 
   const safeHandoffUrl = getSafeZoneBuilderLaunchUrl(pendingZoneBuilderLaunchUrl);
@@ -271,6 +319,7 @@ function launchZoneBuilder() {
 
 function forgetThisBrowser() {
   clearRememberedRegistration();
+  rememberedLaunchRequiresFreshHandoff = false;
 
   if (registrationNameInput) {
     registrationNameInput.value = "";
@@ -370,6 +419,7 @@ async function submitRegistration(form, metadata = {}) {
   }, signupMetadata);
 
   if (signupResult.ok) {
+    rememberedLaunchRequiresFreshHandoff = false;
     pendingZoneBuilderLaunchUrl = getSafeZoneBuilderLaunchUrl(signupResult.launchUrl);
     const responseStatus = signupResult.status || "new";
     const isKnownStatus = responseStatus === "new" || responseStatus === "existing";
@@ -440,14 +490,14 @@ enterZoneButtons.forEach((button) => {
 });
 
 launchButtons.forEach((button) => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", async () => {
     void trackEvent("launch_button_clicked", {
       cta: button.textContent.trim(),
       location: "registration-modal",
       email: getStoredRegistrationEmail() || undefined,
       name: getStoredRegistrationName() || undefined,
     });
-    launchZoneBuilder();
+    await launchZoneBuilder(button);
   });
 });
 
@@ -486,6 +536,7 @@ resendButtons.forEach((button) => {
     });
 
     if (resendResult.ok) {
+      rememberedLaunchRequiresFreshHandoff = false;
       pendingZoneBuilderLaunchUrl = getSafeZoneBuilderLaunchUrl(resendResult.launchUrl);
       showRegistrationResult({
         title: "Launch link resent.",
