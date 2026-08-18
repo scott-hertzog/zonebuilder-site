@@ -1,0 +1,7 @@
+{
+  "name": "zonebuilder-site-lab",
+  "private": true,
+  "scripts": {
+    "test:handoff": "node tests/signup-handoff.test.mjs"
+  }
+}

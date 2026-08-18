@@ -1,6 +1,8 @@
 import { resendWelcomeEmail, sendSignup, trackEvent } from "./analytics.js?v=landing-static-7";
+import { getSafeZoneBuilderLaunchUrl } from "./identity-handoff-url.mjs?v=zb-stage-1";
 
-const ZONEBUILDER_APP_URL = "https://scott-hertzog.github.io/zonebuilder-pwa/";
+const ZONEBUILDER_APP_URL = "https://scott-hertzog.github.io/zonebuilder-stage/";
+let pendingZoneBuilderLaunchUrl = "";
 // Keep this as waitlist_signup until the collector whitelist includes registration_submitted.
 const REGISTRATION_EVENT_NAME = "waitlist_signup";
 const ALPHA_REGISTERED_STORAGE_KEY = "zonebuilderAlphaRegistered";
@@ -262,7 +264,9 @@ function launchZoneBuilder() {
     return;
   }
 
-  window.location.assign(ZONEBUILDER_APP_URL);
+  const safeHandoffUrl = getSafeZoneBuilderLaunchUrl(pendingZoneBuilderLaunchUrl);
+  pendingZoneBuilderLaunchUrl = "";
+  window.location.assign(safeHandoffUrl || ZONEBUILDER_APP_URL);
 }
 
 function forgetThisBrowser() {
@@ -366,6 +370,7 @@ async function submitRegistration(form, metadata = {}) {
   }, signupMetadata);
 
   if (signupResult.ok) {
+    pendingZoneBuilderLaunchUrl = getSafeZoneBuilderLaunchUrl(signupResult.launchUrl);
     const responseStatus = signupResult.status || "new";
     const isKnownStatus = responseStatus === "new" || responseStatus === "existing";
     const status = responseStatus === "existing" ? "existing" : "new";
@@ -481,6 +486,7 @@ resendButtons.forEach((button) => {
     });
 
     if (resendResult.ok) {
+      pendingZoneBuilderLaunchUrl = getSafeZoneBuilderLaunchUrl(resendResult.launchUrl);
       showRegistrationResult({
         title: "Launch link resent.",
         message: "Check your inbox for the ZoneBuilder Alpha launch link.",
